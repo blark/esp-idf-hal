@@ -187,6 +187,7 @@ fn enter(cs: &IsrCriticalSection) {
     }
 }
 
+// Single-core RISC-V chips: vPortExitCritical takes no args
 #[cfg(not(any(esp32, esp32s2, esp32s3, esp32p4)))]
 #[inline(always)]
 #[link_section = ".iram1.interrupt_exit"]
@@ -196,12 +197,23 @@ fn exit(_cs: &IsrCriticalSection) {
     }
 }
 
-#[cfg(any(esp32, esp32s2, esp32s3, esp32p4))]
+// Xtensa dual-core: vPortExitCritical takes spinlock pointer
+#[cfg(any(esp32, esp32s2, esp32s3))]
 #[inline(always)]
 #[link_section = ".iram1.interrupt_exit"]
 fn exit(cs: &IsrCriticalSection) {
     unsafe {
         vPortExitCritical(cs.0.get());
+    }
+}
+
+// P4 dual-core RISC-V: vPortExitCritical takes no args (spinlock stored internally)
+#[cfg(esp32p4)]
+#[inline(always)]
+#[link_section = ".iram1.interrupt_exit"]
+fn exit(_cs: &IsrCriticalSection) {
+    unsafe {
+        vPortExitCritical();
     }
 }
 
