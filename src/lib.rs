@@ -49,7 +49,8 @@ pub mod modem;
 ))]
 pub mod onewire;
 
-#[cfg(all(not(feature = "pcnt-legacy"), esp_idf_soc_pcnt_supported))]
+// TODO: Re-enable PCNT for P4 once esp-idf-sys generates proper bindings
+#[cfg(all(not(feature = "pcnt-legacy"), esp_idf_soc_pcnt_supported, not(esp32p4)))]
 #[cfg_attr(feature = "nightly", doc(cfg(esp_idf_soc_pcnt_supported)))]
 pub mod pcnt;
 
