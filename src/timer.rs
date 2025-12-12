@@ -77,7 +77,7 @@ pub mod config {
         #[cfg(esp32h2)]
         #[default]
         PLL48,
-        #[cfg(any(esp32c5, esp32c6, esp32c61))]
+        #[cfg(any(esp32c5, esp32c6, esp32c61, esp32p4))]
         #[default]
         PLL80,
         #[cfg(not(esp32))]
@@ -99,7 +99,7 @@ pub mod config {
                 ClockSource::PLL48 => {
                     esp_idf_sys::soc_periph_tg_clk_src_legacy_t_TIMER_SRC_CLK_PLL_F48M
                 }
-                #[cfg(any(esp32c5, esp32c6, esp32c61))]
+                #[cfg(any(esp32c5, esp32c6, esp32c61, esp32p4))]
                 ClockSource::PLL80 => {
                     esp_idf_sys::soc_periph_tg_clk_src_legacy_t_TIMER_SRC_CLK_PLL_F80M
                 }
@@ -224,7 +224,7 @@ impl<'d> TimerDriver<'d> {
                 {
                     hz = 48_000_000 / self.divider;
                 }
-                #[cfg(any(esp32c5, esp32c6, esp32c61))] //PLL80
+                #[cfg(any(esp32c5, esp32c6, esp32c61, esp32p4))] //PLL80
                 {
                     hz = 80_000_000 / self.divider;
                 }

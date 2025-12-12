@@ -12,7 +12,7 @@ pub const CORES: u32 = SOC_CPU_CORES_NUM;
 #[repr(C)]
 pub enum Core {
     Core0 = 0, // PRO on dual-core systems, the one and only CPU on single-core systems
-    #[cfg(any(esp32, esp32s3))]
+    #[cfg(any(esp32, esp32s3, esp32p4))]
     Core1 = 1, // APP on dual-core systems
 }
 
@@ -33,7 +33,7 @@ impl From<i32> for Core {
     fn from(core: i32) -> Self {
         match core {
             0 => Core::Core0,
-            #[cfg(any(esp32, esp32s3))]
+            #[cfg(any(esp32, esp32s3, esp32p4))]
             1 => Core::Core1,
             _ => panic!(),
         }
@@ -43,9 +43,9 @@ impl From<i32> for Core {
 /// Returns the currently active core ID
 /// On single-core systems, like esp32s2 and esp32c3 this function always returns 0
 ///
-/// On dual-core systems like esp32 and esp32s3 this function returns:
-/// 0 - when the active core is the PRO CPU
-/// 1 - when the active core is the APP CPU
+/// On dual-core systems like esp32, esp32s3, and esp32p4 this function returns:
+/// 0 - when the active core is the PRO CPU (HP core 0)
+/// 1 - when the active core is the APP CPU (HP core 1)
 #[inline(always)]
 #[link_section = ".iram1.cpu_core"]
 pub fn core() -> Core {
@@ -56,9 +56,15 @@ pub fn core() -> Core {
     #[cfg(any(esp32, esp32s3, esp32p4))]
     let mut core = 0;
 
-    #[cfg(any(esp32, esp32s3))] // TODO: Need a way to get the running core on esp32p4 in future
+    #[cfg(any(esp32, esp32s3))]
     unsafe {
         asm!("rsr.prid {0}", "extui {0},{0},13,1", out(reg) core);
+    }
+
+    // ESP32-P4 is RISC-V: read mhartid CSR for core ID
+    #[cfg(esp32p4)]
+    unsafe {
+        asm!("csrr {0}, mhartid", out(reg) core);
     }
 
     match core {
